@@ -1,0 +1,514 @@
+
+
+
+
+function doGet(e) { 
+
+var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+var sheet = ss.getSheetByName("S");
+
+//  addUser(e,sheet);
+}
+
+
+function doPost(e) {  // function handles the incomming data
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+ 
+datahandler(e,ss);
+//testhandler(e,ss);
+}
+
+
+
+
+
+function testhandler(e,ss){ // function handles all the data, shifitng, aranging and setting up all the right filters
+
+ var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+
+  var sheet = ss.getSheetByName("S"); 
+
+
+  //var collumsheet = ss.getSheetByName("Cleaned")
+
+  var word = 'FromFile'  // words to impliment filter//do this for when wanting to split between live nad all data
+  var lastWordRange = "A"  
+  //var rowvalue = collumsheet.getRange(getLastDataRow(collumsheet, lastWordRange),1).getValue();
+
+  //var data1 = e.postData.contents;
+
+  var data1 = sheet.getRange(getLastDataRow(sheet, lastWordRange),1,sheet.getLastRow(),1).getValue();  // testing code when the phone not used
+  Logger.log(data2)
+  var data2 = data1.split("]"); //getValues vs getValue. The plural does not work
+  Logger.log(data2)
+  sheet.getRange(getLastDataRow(sheet, lastWordRange)+1,1).setValue(data2); // print data to first  Collum // look between values and value
+
+  var data3 = sheet.getRange(getLastDataRow(sheet, lastWordRange),1,sheet.getLastRow()).getValues(); // will add last row later // not sure what data2 does
+  
+  Logger.log(data3)
+  if(filtersearch(data2, word)== true){ // can be data2 as well // for manual // when all data sent
+  lastcollum = rearange(data2,sheet); // test with file 1
+  Logger.log('here2')
+  thirdfilter(lastcollum); //one stack of data
+
+  }else{//when data constantly coming in //this is where the code goes and stores extra data
+  
+    lastcollum = rearangeAppend(data2,sheet);
+    
+    Logger.log(lastcollum)
+    thirdfilter(lastcollum); // append the data as well
+  }
+
+
+
+  //thirdfilter(); // function filters for x, Y and z. Will change later.   // checkf that it start at previous row, create global varaible
+  //remove_Condi(); //function removes variables from inputs
+}
+
+
+
+
+//e,sheet
+function datahandler(e,ss){ // function handles all the data, shifitng, aranging and setting up all the right filters
+
+ var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+
+  var sheet = ss.getSheetByName("S"); 
+
+
+  //var collumsheet = ss.getSheetByName("Cleaned")
+
+  var word = 'FromFile'  // words to impliment filter//do this for when wanting to split between live nad all data
+  var lastWordRange = "A"  
+    //var rowvalue = collumsheet.getRange(getLastDataRow(collumsheet, lastWordRange),1).getValue();
+
+  var data1 = e.postData.contents;
+
+  //var data1 = sheet.getRange(getLastDataRow(sheet, lastWordRange),1,sheet.getLastRow(),1).getValue();  // testing code when the phone not used
+  var data2 = data1.split(" "); //getValues vs getValue. The plural does not work
+  
+  sheet.getRange(getLastDataRow(sheet, lastWordRange)+1,1).setValue(data2); // print data to first  Collum // look between values and value
+
+  var data3 = sheet.getRange(getLastDataRow(sheet, lastWordRange),1,sheet.getLastRow()).getValues(); // will add last row later
+  
+
+  if(filtersearch(data3, word)== true){ // can be data2 as well // for manual // when all data sent
+  lastcollum = rearange(data2,sheet); // test with file 1
+
+  thirdfilter(lastcollum); //one stack of data
+
+  }else{//when data constantly coming in //this is where the code goes and stores extra data
+  
+    lastcollum = rearangeAppend(data2,sheet);
+    Logger.log('here3')
+    Logger.log(lastcollum)
+    thirdfilter(lastcollum); // append the data as well
+  }
+
+
+
+  //thirdfilter(); // function filters for x, Y and z. Will change later.   // checkf that it start at previous row, create global varaible
+  //remove_Condi(); //function removes variables from inputs
+ }
+
+
+
+
+
+
+function rearange(datadata,sheet) {
+  //ifincomiing data == word then append else dont append
+ //var lastcollum = sheet.getLastColumn() +1; // use this to always update new set of data into new collum
+  var lastcollum = sheet.getLastColumn() +1;
+
+  var newarray = [];
+   for(var i=0, iLen=datadata.length; i<iLen; i++){ // this take data1 and prints it out as one index
+      var s = datadata[i];
+      newarray.push([s]); // push is the best form of appending
+      //sheet.getRange(1+i,sheet.getLastColumn() +1,1,1).setValue(s) // this takes way to long, rather do one single as in the bottem
+      
+   }
+   
+  sheet.getRange(1,lastcollum,newarray.length,1).setValues(newarray)
+return lastcollum ;
+}
+
+function rearangeAppend(datadata,sheet) { // rearange appended data(if not file1), set values at collum3(always for now)
+  //ifincomiing data == word then append else dont append
+ //var lastcollum = sheet.getLastColumn() +1; // use this to always update new set of data into new collum // for now manual
+  var lastWord = "C"
+  var lastcollum = 3; // will change this late
+  var lastrow = sheet.getLastRow() +1;
+  var newarray = [];
+ 
+   
+   for(var i=0, iLen=datadata.length; i<iLen; i++){ //why do I do this?
+      var s = datadata[i];
+      
+      //sheet.getRange(sheet.getLastRow()+1,lastcollum,1,1).setValue(s) look at the top one why it is not used
+      newarray.push([s]);
+     
+   }
+   
+  sheet.getRange(getLastDataRow(sheet, lastWord),3,newarray.length,1).setValues(newarray)
+  
+  Logger.log(newarray) 
+  return lastcollum ;
+  // var word1 = 'stopped'
+  // if(filtersearch(data3, word1)== true){ // can be data2 as well // for manual
+  // lastcollum= sheet.getLastColumn()+1;
+  // Logger.log('here')
+  // }else {lastcollum= 3;} // change 3 for later  
+
+}
+
+function remove_Condi(ss, coll, crit , length, data){
+  //var newsheet = ss.insertSheet('Cleaned')
+  var newsheet = ss.getSheetByName('Cleaned')
+  var place = coll;
+  var counterarray = [];
+  //var values = sheet.getRange(`A1:A${sheet.getLastRow()}`).getValues().flat(); // in order for the data to be read correctly install function that updates //use the sa,e as A1 making it B
+  //var values = newsheet.getRange(1,coll,length).getValues().flat();
+  //Logger.log(values)
+  values = data.flat()
+  var  new_values = values.map(v=>[v.replace(crit,``)]);
+  //var  new_values = values.replace[(`Xaxis=`,``)];
+   //Logger.log(values)
+   //Logger.log(place)
+  newsheet.getRange(1,place,new_values.length,1).setValues(new_values);
+counter = 0;
+
+   for(var i=0, iLen=data.length; i<iLen; i++){
+      var counter = counter +1;
+     counterarray.push([counter]);}
+
+  newsheet.getRange(1,place,new_values.length,1).setValues(new_values);
+  newsheet.getRange(1,1,counterarray.length,1).setValues(counterarray);
+
+  //sheet.getRange(2,8,new_values.length,1).setValues(new_values);
+}
+
+
+function increment(){
+  var cell = SpreadsheetApp.getActiveSheet().getRange("C2:C86");
+  var cellValues = cell.getValues().map(function(row) {return [row[0] + 1]}); // Modified
+  cell.setValues(cellValues); // Modified // will take to long
+}
+
+
+/*
+//problems here...
+sheet must be sent instead of just running with new var
+the current placement mussed be used instead of the lastrow and last data . or send the word
+*/
+
+function thirdfilter(lastcollum){ // maybe get collum here that is being used and filter at data handler // uses the newest collum 
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+  var sheet = ss.getSheetByName("S"); 
+  //var startcol = 1;
+  //var number = filterdata_x.length;// will get value that needs to count to
+
+  var buf = "=21" //test
+  var criteriaX = "Xaxis="
+  var criteriaY = "Yaxis=" // will take in norm instead
+  var criteriaZ = "Zaxis="
+  var criteriaVar4 = "Var4="
+  var criteriaVar5 = "Var5="
+  var criteriaVar6 = "Var6="
+  Logger.log(criteriaX)
+
+  //var range = sheet.getRange(`A6:A`) // apperently also works
+  //var data3 = sheet.getRange(`A6:A${sheet.getLastRow()}`).getValues().flat();
+  var collumlet =  columnToLetter(lastcollum)
+  var lastRow = getLastDataRow(sheet,collumlet) // helps by just sending the data in the current sheet//appending
+  //var lastRow = sheet.getLastRow(); // change 
+  //var lastColumn = sheet.getLastColumn();
+  //var data3 = sheet.getRange(`A6:A${sheet.getLastRow()}`).getValues().flat();
+
+  var data3 = sheet.getRange(1,lastcollum,lastRow,1).getValues() // range to distribute // want it to read the data from sheat instead of data entry
+  var filterdata_x = data3.filter(function(item) {
+  return item[0].match(criteriaX)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+  });
+  var filterdata_y = data3.filter(function(item) {
+  return item[0].match(criteriaY)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+  });
+  var filterdata_z = data3.filter(function(item) {
+  return item[0].match(criteriaZ)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+  });
+
+//   var filterdata_norm = data3.filter(function(item) {
+//   return item[0].match(criteriaXnorm)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+//   });
+//  //using filterdata_norm below
+
+  var filterdata_x = filterdata_x.filter(function(item) { //filterdata_x //filtering data below for 21 buf
+    return item[0].match(buf)==null;
+    
+  });
+    var filterdata_y = filterdata_y.filter(function(item) { //filterdata_x //filtering data below for 21 buf
+    return item[0].match(buf)==null;
+    
+  });
+
+  var filterdata_z = filterdata_z.filter(function(item) { //filterdata_x //filtering data below for 21 buf
+    return item[0].match(buf)==null;
+    
+  });
+
+  var data_Var4 = data3.filter(function(item) {
+  return item[0].match(criteriaVar4)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+  });
+  var data_Var5 = data3.filter(function(item) {
+  return item[0].match(criteriaVar5)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+  });
+  var data_Var6 = data3.filter(function(item) {
+  return item[0].match(criteriaVar6)!=null; // Will say item is not function on array when it there are numbers in play, weird...maybe if error go on to next?
+  });
+
+
+
+  //var newsheet = ss.insertSheet('values')
+  var newsheet = ss.getSheetByName('values')
+  
+  newsheet.getRange(1,lastcollum,filterdata_x.length,1).setValues(filterdata_x); // let it add with lastrow // remeber setvalues
+  //Logger.log(newsheet.getLastColumn())
+  remove_Condi(ss , lastcollum, criteriaX, filterdata_x.length, filterdata_x); // problem here is if my data get appended // just send row as well and print at row easy. Row can be updated in appade
+  
+  newsheet.getRange(1,lastcollum+1,filterdata_y.length,1).setValues(filterdata_y); // borken if it is 0 but will never have 0. No need to fix it now
+  remove_Condi(ss , lastcollum+1, criteriaY, filterdata_y.length, filterdata_y);
+
+  newsheet.getRange(1,lastcollum+2,filterdata_z.length,1).setValues(filterdata_z);
+  remove_Condi(ss , lastcollum+2, criteriaZ, filterdata_z.length, filterdata_z);
+
+  
+  newsheet.getRange(1,lastcollum+3,data_Var4.length,1).setValues(data_Var4);
+  remove_Condi(ss , lastcollum+3, criteriaVar4, data_Var4.length, data_Var4);
+  
+  newsheet.getRange(1,lastcollum+4,data_Var5.length,1).setValues(data_Var5);
+  remove_Condi(ss , lastcollum+4, criteriaVar5, data_Var5.length, data_Var5);
+  
+  newsheet.getRange(1,lastcollum+5,data_Var6.length,1).setValues(data_Var6);
+  remove_Condi(ss , lastcollum+5, criteriaVar6, data_Var6.length, data_Var6);
+
+  
+
+}
+
+
+
+function test(){
+var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+var sheet = ss.getSheetByName("S");
+var lastWordRandge = "C"
+var lastword = columnToLetter(sheet.getLastColumn());
+Logger.log(lastword)
+  var s = getLastDataRow(sheet,lastWordRandge)
+  Logger.log(s+1)
+}
+
+function getLastDataRow(sheet,lastWordRange) {
+  
+  var lastRow = sheet.getLastRow();
+  var range = sheet.getRange(lastWordRange + lastRow);
+  if (range.getValue() !== "") {
+    return lastRow;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
+  }               
+}
+
+function columnToLetter(column) // returns the colum to use in last datarow
+{
+  var temp, letter = '';
+  while (column > 0)
+  {
+    temp = (column - 1) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    column = (column - temp - 1) / 26;
+  }
+  return letter;
+}
+
+
+function letterToColumn(letter)
+{
+  var column = 0, length = letter.length;
+  for (var i = 0; i < length; i++)
+  {
+    column += (letter.charCodeAt(i) - 64) * Math.pow(26, length - i - 1);
+  }
+  return column;
+}
+
+
+function filtersearch(data, word){
+  var searchterm = word;
+
+  var filterdata = data.filter(function(item) {
+   return item[0].match(searchterm)!=null;
+    
+  });
+//Logger.log(filterdata)
+if(filterdata != ""){ 
+  return true;
+}
+return false;
+}
+
+//dont think I use the below
+
+function create_filter(){
+  // old filter, have to create new sheet
+    var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+    var sheet = ss.getSheetByName("S"); 
+    //var data3 = sheet.getRange(`A6:A${sheet.getLastRow()}`).getValues().flat(); // change range
+    var data3 = sheet.getRange(`A6:A${sheet.getLastRow()}`).getValues().flat();
+    Logger.log(data3)
+    //var datarange = data3.getRange
+    var range = sheet.getRange(1,1,data3.length,1) // range to distribute //5 is E collumn
+
+  var  filter = range.createFilter();
+  
+  //var Filter_Criteria1 = SpreadsheetApp.newFilterCriteria().whenNumberGreaterThan(1000);
+  var  Filter_Criteria2 = SpreadsheetApp.newFilterCriteria().whenTextContains(["Xaxis="]);
+  var coll1 = 3;
+  var coll2 = 1;
+      
+      //var  add_filter1 =  filter.setColumnFilterCriteria(coll1,Filter_Criteria1);
+  var  add_filter2 = filter.setColumnFilterCriteria(coll2,Filter_Criteria2);
+
+    Logger.log("Filter has been added.");
+  var  range1 = sheet.getDataRange();
+
+  var  new_sheet = ss.insertSheet();
+  new_sheet.setName("Xaxis");
+
+  range.copyTo(new_sheet.getRange(1,1));
+
+  filter.remove();
+}
+
+
+function secondfilter(){ // my if statement
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+  var sheet = ss.getSheetByName("S"); 
+  var data3 = sheet.getRange(`A6:A${sheet.getLastRow()}`).getValues().flat();
+  Logger.log(data3)
+  var range = sheet.getRange(1,1,data3.length,1) // range to distribute //5 is E collumn
+
+  // var last = data3.trim()
+  // var search = "Xaxis="
+  // for()
+  if(data3.whenTextContains("Xaxis=")){ 
+
+  Logger.log("here")
+  }
+
+}
+
+function weighted_avg(){
+  
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1OI30sPgcSv0vm3CqekCN3Hom9zxWn_parpumnWTJiLk/edit#gid=0");
+  var sheet = ss.getSheetByName("Cleaned"); 
+  var data5 = sheet.getRange(`D1:D${sheet.getLastRow()}`).getValues()
+
+  var newsheet = ss.getSheetByName('WA');
+
+//`D1:D${sheet.getLastRow()}`
+  //test = ExponentialMovingAverage(1,3,data3);
+  //var data1 = sheet.getRange(getLastDataRow(sheet, lastWordRange),1,sheet.getLastRow(),1).getValue();  // testing code when the phone not used
+ //getValues vs getValue. The plural does not work
+//Logger.log(test);
+
+var data6 = WeightedMovingAverage(data5, 5);
+Logger.log(data6);
+newsheet.getRange(1,1,data6.length,1).setValues(data6);
+
+
+}
+function WeightedMovingAverage(values, windowSize){
+
+//var last = sheet.getLastRow() // get kast name of 
+
+
+  var average = [];
+  var rows = values.length;
+
+  for (var i = 0; i < rows - windowSize + 1; i++) {
+  var sum =0;
+  for (var j = 0; j < windowSize; j++) {
+    var av = parseFloat(values[j+i]);
+    sum += av;      
+  }
+  var avg = sum/windowSize; 
+  average[i] = [avg];  
+
+  }
+
+  return average;
+}
+
+
+// function ExponentialMovingAverage(alpha, windowSize, values) {
+//   var weights = [];
+//   for (var i = 0; i < windowSize; i++) {
+//     var w = Math.pow(alpha, windowSize - 1 - i);
+//     weights[weights.length] = w;
+//   }
+
+//   var average = WeightedMovingAverage(weights, values);
+//   return average;
+// }
+// function WeightedMovingAverage(weights, values) {
+//   // If values is a scalar or weights is a scalar or 
+//   // weights has length 1, return values.
+//   if (!values.map || !weights.map || weights.length === 1) {
+//     return values;
+//   }
+
+//   var windowSize = weights.length;
+//   var rows = values.length;
+    
+//   if (windowSize > rows) {
+//     weights.splice(0, windowSize - rows);
+//     windowSize = weights.length;
+//     Logger.log("WARNING: windowSize greater than number of rows" +
+//                " in the range, truncating the weitghts to " +
+//                "the number of rows and using the last weights.");
+//   }
+//   /* If this function is called from the spreadsheet with a range, 
+//    * weights will be array of columns, lets remove this extra 
+//    * indirection. */
+//   if (weights[0].map) {
+//     for (var i = 0; i < weights.length; i++) {
+//       weights[i] = weights[i][0];    
+      
+//     }
+//   }
+//   var average = [];
+//   for (var i = 0; i < rows - windowSize + 1; i++) {
+//     var sumValues = 0;
+//     var sumWeigths = 0;
+//     Logger.log(values);
+//     for (var j = 0; j < windowSize; j++) {
+//       var x = values[i + j][0];
+//          Logger.log(x);
+//       if (typeof x === "number") {
+//         var w = weights[j];
+//         if (typeof w === "number") {
+//           sumWeigths += w;
+//           sumValues += w * x;         
+//         }
+//       }
+//     }
+//     var avg = sumValues / sumWeigths;
+//     average[average.length] = avg;
+//   }
+//   return average;
+// }
+
+
+
